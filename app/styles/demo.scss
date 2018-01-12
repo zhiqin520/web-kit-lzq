@@ -1,0 +1,14 @@
+@import "default.scss";
+
+body {
+  font-family: $font-family;
+}
+.time {
+  width: .5rem;
+  height: .5rem;
+  line-height: .5rem;
+  text-align: center;
+  color: #fff;
+  font-size: .2rem;
+  background-color: $color-org;
+}
