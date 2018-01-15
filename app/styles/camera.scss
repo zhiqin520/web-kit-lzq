@@ -1,0 +1,17 @@
+@import "default.scss";
+
+body {
+  font-family: $font-family;
+}
+.vedio {
+  width: 3.5rem;
+  height: 2.8rem;
+  margin: 0 auto;
+  border: 1px solid $color-org;
+}
+
+.btn {
+  width: .5rem;
+  height: .3rem;
+  background-color: blue;
+}

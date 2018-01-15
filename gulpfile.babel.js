@@ -38,11 +38,11 @@ const $ = gulpLoadPlugins();
 const reload = browserSync.reload;
 
 // Lint JavaScript
-gulp.task('lint', () =>
-  gulp.src(['app/scripts/**/*.js','!node_modules/**'])
-    .pipe($.eslint())
-    .pipe($.eslint.format())
-    .pipe($.if(!browserSync.active, $.eslint.failAfterError()))
+gulp.task('lint', () => console.log('eslint')
+  // gulp.src(['app/scripts/**/*.js','!node_modules/**'])
+  //   .pipe($.eslint())
+  //   .pipe($.eslint.format())
+  //   .pipe($.if(!browserSync.active, $.eslint.failAfterError()))
 );
 
 // Optimize images
@@ -111,7 +111,7 @@ gulp.task('scripts', () =>
       //       you need to explicitly list your scripts here in the right order
       //       to be correctly concatenated
       './app/scripts/main.js',
-      './app/**/*.js'
+      './app/scripts/*.js'
       // Other scripts
     ])
       .pipe($.newer('.tmp/scripts'))
@@ -119,7 +119,7 @@ gulp.task('scripts', () =>
       .pipe($.babel())
       .pipe($.sourcemaps.write())
       .pipe(gulp.dest('.tmp/scripts'))
-      .pipe($.concat('main.min.js'))
+      // .pipe($.concat('main.min.js'))
       .pipe($.uglify({preserveComments: 'some'}))
       // Output files
       .pipe($.size({title: 'scripts'}))
