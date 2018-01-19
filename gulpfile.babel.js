@@ -33,16 +33,21 @@ import swPrecache from 'sw-precache';
 import gulpLoadPlugins from 'gulp-load-plugins';
 import {output as pagespeed} from 'psi';
 import pkg from './package.json';
+import webpack from 'webpack';
+import gulpWebpack from 'webpack-stream';  //基于文件流
+import rename from 'gulp-rename';//Rename files
+import pump from 'pump';
+
 
 const $ = gulpLoadPlugins();
 const reload = browserSync.reload;
 
 // Lint JavaScript
-gulp.task('lint', () => console.log('eslint')
-  // gulp.src(['app/scripts/**/*.js','!node_modules/**'])
-  //   .pipe($.eslint())
-  //   .pipe($.eslint.format())
-  //   .pipe($.if(!browserSync.active, $.eslint.failAfterError()))
+gulp.task('lint', () =>
+  gulp.src(['app/scripts/**/*.js','!node_modules/**'])
+    .pipe($.eslint())
+    .pipe($.eslint.format())
+    .pipe($.if(!browserSync.active, $.eslint.failAfterError()))
 );
 
 // Optimize images
@@ -57,7 +62,7 @@ gulp.task('images', () =>
 );
 
 // Copy all files at the root level (app)
-gulp.task('copy', () =>
+gulp.task('copy', ['copy-vendors-scripts'], () =>
   gulp.src([
     'app/*',
     '!app/*.html',
@@ -111,7 +116,7 @@ gulp.task('scripts', () =>
       //       you need to explicitly list your scripts here in the right order
       //       to be correctly concatenated
       './app/scripts/main.js',
-      './app/scripts/*.js'
+      './app/scripts/pageAdapted.js'
       // Other scripts
     ])
       .pipe($.newer('.tmp/scripts'))
@@ -119,13 +124,61 @@ gulp.task('scripts', () =>
       .pipe($.babel())
       .pipe($.sourcemaps.write())
       .pipe(gulp.dest('.tmp/scripts'))
-      // .pipe($.concat('main.min.js'))
+      .pipe($.concat('main.min.js'))
       .pipe($.uglify({preserveComments: 'some'}))
       // Output files
       .pipe($.size({title: 'scripts'}))
       .pipe($.sourcemaps.write('.'))
       .pipe(gulp.dest('dist/scripts'))
       .pipe(gulp.dest('.tmp/scripts'))
+);
+
+gulp.task('min-mobile',  (cb) => {
+  pump([
+      gulp.src('./app/scripts/mobile/*.js'),
+      $.babel(),
+      $.uglify({preserveComments: 'some'}),
+      gulp.dest('dist/scripts/mobile')
+    ],
+    cb
+  );
+});
+
+gulp.task('min-camera',  (cb) => {
+  pump([
+      gulp.src('./app/scripts/camera/*.js'),
+      $.babel(),
+      $.uglify({preserveComments: 'some'}),
+      gulp.dest('dist/scripts/camera')
+    ],
+    cb
+  );
+});
+
+gulp.task('min-modules', () =>
+  gulp.src([
+    './app/scripts/modules/index.js',
+  ])
+    .pipe(gulpWebpack({
+      module:{
+        loaders:[{
+          test:/\.js$/,
+          loader:'babel-loader'
+        }]
+      }
+    }),null,(err,stats)=>{
+      log(`Finished`,stats.toString({
+        chunks:false
+      }))
+    })
+    .pipe(rename({
+      basename:'index',
+      extname:'.min.js'
+    }))
+    .pipe($.uglify({preserveComments: 'some'}))
+    .pipe($.uglify({preserveComments: 'some'}))
+    .pipe(gulp.dest('dist/scripts/modules'))
+    .pipe(gulp.dest('.tmp/scripts/modules'))
 );
 
 // Scan your HTML for assets & optimize them
@@ -157,7 +210,7 @@ gulp.task('html', () => {
 gulp.task('clean', () => del(['.tmp', 'dist/*', '!dist/.git'], {dot: true}));
 
 // Watch files for changes & reload
-gulp.task('serve', ['scripts', 'styles'], () => {
+gulp.task('serve', ['default'], () => {
   browserSync({
     notify: false,
     // Customize the Browsersync console logging prefix
@@ -174,7 +227,7 @@ gulp.task('serve', ['scripts', 'styles'], () => {
 
   gulp.watch(['app/**/*.html'], reload);
   gulp.watch(['app/styles/**/*.{scss,css}'], ['styles', reload]);
-  gulp.watch(['app/scripts/**/*.js'], ['lint', 'scripts', reload]);
+  gulp.watch(['app/scripts/**/*.js'], ['scripts', reload]);
   gulp.watch(['app/images/**/*'], reload);
 });
 
@@ -198,7 +251,7 @@ gulp.task('serve:dist', ['default'], () =>
 gulp.task('default', ['clean'], cb =>
   runSequence(
     'styles',
-    ['lint', 'html', 'scripts', 'images', 'copy'],
+    ['html', 'scripts', 'min-mobile', 'min-camera', 'min-modules', 'images', 'copy'],
     'generate-service-worker',
     cb
   )
@@ -219,6 +272,11 @@ gulp.task('pagespeed', cb =>
 gulp.task('copy-sw-scripts', () => {
   return gulp.src(['node_modules/sw-toolbox/sw-toolbox.js', 'app/scripts/sw/runtime-caching.js'])
     .pipe(gulp.dest('dist/scripts/sw'));
+});
+
+gulp.task('copy-vendors-scripts', () => {
+  return gulp.src(['app/scripts/vendors/**'])
+    .pipe(gulp.dest('dist/scripts/vendors'));
 });
 
 // See http://www.html5rocks.com/en/tutorials/service-worker/introduction/ for

@@ -2,5 +2,8 @@
   "presets": ["es2015", "stage-2"],
   // Remove the line below to enable ES2015 support.
   //  "only": "gulpfile.babel.js",
-  "retainLines": true
+  "retainLines": true,
+  "plugins": [
+    "transform-runtime"
+  ]
 }

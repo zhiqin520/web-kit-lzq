@@ -35,27 +35,18 @@
     <!--
     <link rel="canonical" href="http://www.example.com/">
     -->
-    <link rel="stylesheet" href="../styles/camera/camera.css">
-    <link rel="stylesheet" href="../styles/vendors/bootstrap.min.css">
+    <link rel="stylesheet" href="../styles/mobile/mobile.css">
 
   </head>
   <body>
     <!-- Add your site or app content here -->
 
-    <!--video用于显示媒体设备的视频流，自动播放-->
-    <video id="video" class="vedio" autoplay></video>
-    <!--拍照按钮-->
-    <div>
-      <button id="capture" type="button" class="btn btn-primary">拍照</button>
-      <button id="close" type="button" class="btn btn-primary">关闭摄像头</button>
-    </div>
-    <!--描绘video截图-->
-    <canvas id="canvas" width="330" height="280"></canvas>
+    <div id='setTime' class="time">1</div>
 
     <!-- build:js scripts/main.min.js -->
     <script src="../scripts/vendors/jquery-3.2.1.min.js"></script>
     <script src="../scripts/main.min.js"></script>
-    <script src="../scripts/camera/camera.js"></script>
+    <script src="../scripts/mobile/mobile.js"></script>
     <!-- endbuild -->
 
   </body>
