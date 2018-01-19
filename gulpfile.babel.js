@@ -33,11 +33,8 @@ import swPrecache from 'sw-precache';
 import gulpLoadPlugins from 'gulp-load-plugins';
 import {output as pagespeed} from 'psi';
 import pkg from './package.json';
-import webpack from 'webpack';
 import gulpWebpack from 'webpack-stream';  //基于文件流
-import rename from 'gulp-rename';//Rename files
 import pump from 'pump';
-
 
 const $ = gulpLoadPlugins();
 const reload = browserSync.reload;
@@ -156,10 +153,11 @@ gulp.task('min-camera',  (cb) => {
 });
 
 gulp.task('min-modules', () =>
-  gulp.src([
-    './app/scripts/modules/index.js',
-  ])
+  gulp.src(['./app/scripts/modules/index.js'])
     .pipe(gulpWebpack({
+      output: {
+        filename: 'index.js'
+      },
       module:{
         loaders:[{
           test:/\.js$/,
@@ -171,12 +169,9 @@ gulp.task('min-modules', () =>
         chunks:false
       }))
     })
-    .pipe(rename({
-      basename:'index',
-      extname:'.min.js'
-    }))
+    .pipe(gulp.dest('dist/scripts/modules'))
     .pipe($.uglify({preserveComments: 'some'}))
-    .pipe($.uglify({preserveComments: 'some'}))
+    .pipe($.rename('index.min.js'))
     .pipe(gulp.dest('dist/scripts/modules'))
     .pipe(gulp.dest('.tmp/scripts/modules'))
 );
