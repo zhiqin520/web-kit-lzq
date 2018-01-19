@@ -35,6 +35,10 @@ import {output as pagespeed} from 'psi';
 import pkg from './package.json';
 import gulpWebpack from 'webpack-stream';  //基于文件流
 import pump from 'pump';
+import browserify from 'browserify';
+import source from 'vinyl-source-stream';
+import buffer from 'vinyl-buffer';
+import babelify from 'babelify';
 
 const $ = gulpLoadPlugins();
 const reload = browserSync.reload;
@@ -152,29 +156,46 @@ gulp.task('min-camera',  (cb) => {
   );
 });
 
-gulp.task('min-modules', () =>
-  gulp.src(['./app/scripts/modules/index.js'])
-    .pipe(gulpWebpack({
-      output: {
-        filename: 'index.js'
-      },
-      module:{
-        loaders:[{
-          test:/\.js$/,
-          loader:'babel-loader'
-        }]
-      }
-    }),null,(err,stats)=>{
-      log(`Finished`,stats.toString({
-        chunks:false
-      }))
-    })
-    .pipe(gulp.dest('dist/scripts/modules'))
-    .pipe($.uglify({preserveComments: 'some'}))
-    .pipe($.rename('index.min.js'))
-    .pipe(gulp.dest('dist/scripts/modules'))
-    .pipe(gulp.dest('.tmp/scripts/modules'))
-);
+// gulp.task('min-modules', () =>
+//   gulp.src(['./app/scripts/modules/index.js'])
+//     .pipe(gulpWebpack({
+//       output: {
+//         filename: 'index.js'
+//       },
+//       module:{
+//         loaders:[{
+//           test:/\.js$/,
+//           loader:'babel-loader'
+//         }]
+//       }
+//     }),null,(err,stats)=>{
+//       log(`Finished`,stats.toString({
+//         chunks:false
+//       }))
+//     })
+//     .pipe(gulp.dest('dist/scripts/modules'))
+//     .pipe($.uglify({preserveComments: 'some'}))
+//     .pipe($.rename('index.min.js'))
+//     .pipe(gulp.dest('dist/scripts/modules'))
+//     .pipe(gulp.dest('.tmp/scripts/modules'))
+// );
+
+gulp.task('min-modules', () =>{
+  return browserify({
+    entries: './app/scripts/modules/index.js',
+    extensions: ['.js'],
+    debug: true
+  })
+  .transform('babelify', {presets: ['es2015', 'stage-2'],"plugins": ["transform-runtime"]})
+  .bundle()
+  .pipe(source('index.js'))
+  .pipe(buffer())
+  .pipe(gulp.dest('dist/scripts/modules'))
+  .pipe($.uglify())
+  .pipe($.rename('index.min.js'))
+  .pipe(gulp.dest('dist/scripts/modules'))
+  .pipe(gulp.dest('.tmp/scripts/modules'))
+})
 
 // Scan your HTML for assets & optimize them
 gulp.task('html', () => {
