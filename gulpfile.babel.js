@@ -190,11 +190,11 @@ gulp.task('min-modules', () =>{
   .bundle()
   .pipe(source('index.js'))
   .pipe(buffer())
+  .pipe(gulp.dest('.tmp/scripts/modules'))
   .pipe(gulp.dest('dist/scripts/modules'))
   .pipe($.uglify())
   .pipe($.rename('index.min.js'))
   .pipe(gulp.dest('dist/scripts/modules'))
-  .pipe(gulp.dest('.tmp/scripts/modules'))
 })
 
 // Scan your HTML for assets & optimize them
@@ -243,7 +243,7 @@ gulp.task('serve', ['default'], () => {
 
   gulp.watch(['app/**/*.html'], reload);
   gulp.watch(['app/styles/**/*.{scss,css}'], ['styles', reload]);
-  gulp.watch(['app/scripts/**/*.js'], ['scripts', reload]);
+  gulp.watch(['app/scripts/**/*.js'], ['min-mobile', 'min-camera', 'min-modules', 'scripts', reload]);
   gulp.watch(['app/images/**/*'], reload);
 });
 

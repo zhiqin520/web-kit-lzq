@@ -1,3 +1,3 @@
-import fun from './exportFile.js';
+import Canvas from './canvas.js';
 
-fun();
+const canvas = new Canvas();
