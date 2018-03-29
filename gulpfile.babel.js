@@ -111,28 +111,44 @@ gulp.task('styles', () => {
 // Concatenate and minify JavaScript. Optionally transpiles ES2015 code to ES5.
 // to enable ES2015 support remove the line `"only": "gulpfile.babel.js",` in the
 // `.babelrc` file.
-gulp.task('scripts', () =>
-    gulp.src([
-      // Note: Since we are not using useref in the scripts build pipeline,
-      //       you need to explicitly list your scripts here in the right order
-      //       to be correctly concatenated
-      './app/scripts/main.js',
-      './app/scripts/pageAdapted.js'
-      // Other scripts
-    ])
-      .pipe($.newer('.tmp/scripts'))
-      .pipe($.sourcemaps.init())
-      .pipe($.babel())
-      .pipe($.sourcemaps.write())
-      .pipe(gulp.dest('.tmp/scripts'))
-      .pipe($.concat('main.min.js'))
-      .pipe($.uglify({preserveComments: 'some'}))
-      // Output files
-      .pipe($.size({title: 'scripts'}))
-      .pipe($.sourcemaps.write('.'))
-      .pipe(gulp.dest('dist/scripts'))
-      .pipe(gulp.dest('.tmp/scripts'))
-);
+gulp.task('scripts', () => {
+  // gulp.src([
+  //   // Note: Since we are not using useref in the scripts build pipeline,
+  //   //       you need to explicitly list your scripts here in the right order
+  //   //       to be correctly concatenated
+  //   './app/scripts/main.js',
+  //   './app/scripts/pageAdapted.js'
+  //   // Other scripts
+  // ])
+  //   .pipe($.newer('.tmp/scripts'))
+  //   .pipe($.sourcemaps.init())
+  //   .pipe($.babel())
+  //   .pipe($.sourcemaps.write())
+  //   .pipe(gulp.dest('.tmp/scripts'))
+  //   .pipe($.concat('main.min.js'))
+  //   .pipe($.uglify({preserveComments: 'some'}))
+  //   // Output files
+  //   .pipe($.size({title: 'scripts'}))
+  //   .pipe($.sourcemaps.write('.'))
+  //   .pipe(gulp.dest('dist/scripts'))
+  //   .pipe(gulp.dest('.tmp/scripts'))
+
+
+  return browserify({
+    entries: './app/scripts/main.js',
+    extensions: ['.js'],
+    debug: true
+  })
+    .transform('babelify', {presets: ['es2015', 'stage-2'], "plugins": ["transform-runtime"]})
+    .bundle()
+    .pipe(source('main.js'))
+    .pipe(buffer())
+    .pipe(gulp.dest('.tmp/scripts'))
+    .pipe(gulp.dest('dist/scripts'))
+    .pipe($.uglify())
+    .pipe($.rename('main.min.js'))
+    .pipe(gulp.dest('dist/scripts'))
+});
 
 gulp.task('min-mobile',  (cb) => {
   pump([
